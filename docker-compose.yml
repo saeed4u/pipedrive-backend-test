@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: app
+    container_name: app
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - DB_USERNAME=$DB_USERNAME
+      - DB_PASSWORD=$DB_PASSWORD
+      - DB_HOSTNAME=db
+      - DB_PORT=$DB_PORT
+      - DB_NAME=$DB_NAME
+    ports:
+      - "4200:8080"
+    volumes:
+      - .:/home/pipedrive/app
+      - node_modules:/home/pipedrive/app/node_modules
+    networks:
+      - pipedrive-network
+    command: ./wait-for.sh db:27017 -- /home/pipedrive/app/node_modules/.bin/nodemon src/app.js
+  db:
+    image: mongo:4.1.1-xenial
+    container_name: db
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=$DB_USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD=$DB_PASSWORD
+    volumes:
+      - dbdata:/data/db
+    networks:
+      - pipedrive-network
+networks:
+  pipedrive-network:
+    driver: bridge
+volumes:
+  node_modules:
+  dbdata:
