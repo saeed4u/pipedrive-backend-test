@@ -7,7 +7,6 @@ services:
       dockerfile: Dockerfile
     image: app
     container_name: app
-    restart: unless-stopped
     env_file: .env
     environment:
       - DB_USERNAME=$DB_USERNAME
@@ -15,18 +14,22 @@ services:
       - DB_HOSTNAME=db
       - DB_PORT=$DB_PORT
       - DB_NAME=$DB_NAME
+      - APP_PORT=$APP_PORT
+      - NODE_ENV=$NODE_ENV
+      - CACHE_HOSTNAME=cache
     ports:
-      - "4200:8080"
+      - 8080:8080
     volumes:
       - .:/home/pipedrive/app
       - node_modules:/home/pipedrive/app/node_modules
     networks:
       - pipedrive-network
     command: ./wait-for.sh db:27017 -- /home/pipedrive/app/node_modules/.bin/nodemon src/app.js
+    depends_on:
+      - cache
   db:
     image: mongo:4.1.1-xenial
     container_name: db
-    restart: unless-stopped
     env_file: .env
     environment:
       - MONGO_INITDB_ROOT_USERNAME=$DB_USERNAME
@@ -35,6 +38,11 @@ services:
       - dbdata:/data/db
     networks:
       - pipedrive-network
+  cache:
+      image: 'bitnami/memcached:latest'
+      container_name: cache
+      networks:
+        - pipedrive-network
 networks:
   pipedrive-network:
     driver: bridge

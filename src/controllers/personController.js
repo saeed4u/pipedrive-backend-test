@@ -5,20 +5,22 @@ const csv = require('csv-parse');
 const TransfromStreamToModel = require('../transformers/transformStreamToModel');
 const stream = require('stream');
 
-const {upload, search} = require('../services/personService');
-
+const {search} = require('../services/personService');
+const response = (error = false, message = 'success') => {
+    return {
+        error: error,
+        message: message
+    }
+};
 exports.handleUpload = (req, rep) => {
     try {
         req.multipart((field, file, filename, encoding, mimetype) => {
             if (mimetype !== 'text/csv') {
-                rep.code(400).send({
-                    error: true,
-                    message: 'We only accept text/csv files'
-                });
+                rep.code(400).send(response(true, 'We only accept text/cv mimetype'));
                 return;
             }
+            rep.code(200).send(response());
             handler(file, filename);
-
         }, (err) => {
             if (err) {
                 throw boom.boomify(err)
@@ -38,9 +40,15 @@ exports.handleUpload = (req, rep) => {
             const csvParser = new csv({columns: false});
             const transformToModel = new TransfromStreamToModel();
             const readUploadedCsvFile = fs.createReadStream(newFileName);
-            stream.pipeline(readUploadedCsvFile, csvParser, transformToModel,(error) => {
-                console.log(error);
-            })
+
+            stream.pipeline(readUploadedCsvFile, csvParser, transformToModel, (error) => {
+                if (error) {
+                    console.log(error);
+                }
+                fs.unlink(newFileName, () => {
+                    console.log('file deleted');
+                })
+            });
         }
 
         //return await upload(req.body)
@@ -51,8 +59,13 @@ exports.handleUpload = (req, rep) => {
 
 exports.handleSearch = async (req, rep) => {
     try {
-        return await search(req.body)
+        if (!req.body.query) {
+            return rep.code(400).send(response(true, 'query string missing'));
+        }
+        return await search(req.body);
+
     } catch (err) {
+        console.log(err);
         throw boom.boomify(err)
     }
 };

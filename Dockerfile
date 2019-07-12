@@ -6,8 +6,6 @@ WORKDIR /home/pipedrive/app
 
 COPY package*.json ./
 
-RUN ls .
-
 USER node
 
 RUN npm install
@@ -15,5 +13,3 @@ RUN npm install
 COPY --chown=node:node . .
 
 EXPOSE 8080
-
-CMD [ "node", "src/app.js" ]
