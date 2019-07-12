@@ -2,6 +2,18 @@ const fastify = require('fastify')({
     logger: true
 });
 
+const cors = require('fastify-cors');
+const routes = require('./routes');
+const multipart = require('fastify-multipart');
+
+fastify.register(multipart);
+
+routes.forEach((route) => {
+    fastify.route(route);
+});
+
+fastify.register(cors);
+
 const port = process.env.PORT || 8080;
 
 const start = async () => {
