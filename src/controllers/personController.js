@@ -16,16 +16,15 @@ exports.handleUpload = (req, rep) => {
     try {
         req.multipart((field, file, filename, encoding, mimetype) => {
             if (mimetype !== 'text/csv') {
-                rep.code(400).send(response(true, 'We only accept text/cv mimetype'));
+                rep.code(400).send(response(true, 'We only accept text/csv mimetype'));
                 return;
             }
-            rep.code(200).send(response());
             handler(file, filename);
         }, (err) => {
             if (err) {
                 throw boom.boomify(err)
             }
-            rep.code(200).send({
+            return rep.code(200).send({
                 error: false,
                 message: 'Successfully uploaded'
             });
@@ -59,10 +58,13 @@ exports.handleUpload = (req, rep) => {
 
 exports.handleSearch = async (req, rep) => {
     try {
-        if (!req.body.query) {
+        if (!req.body.query.trim()) {
             return rep.code(400).send(response(true, 'query string missing'));
         }
-        return await search(req.body);
+        const results = await search(req.body);
+        return rep.code(200).send({
+            results: results
+        })
 
     } catch (err) {
         console.log(err);

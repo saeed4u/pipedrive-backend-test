@@ -10,11 +10,11 @@ module.exports = class TransfromStreamToModel extends stream.Transform {
     }
 
     _transform(chunk, encoding, callback) {
-        const id = chunk[0];
-        const name = chunk[1];
-        const age = chunk[2];
-        const address = chunk[3];
-        const team = chunk[4];
+        const id = chunk[0].trim();
+        const name = chunk[1].trim();
+        const age = chunk[2].trim();
+        const address = chunk[3].trim();
+        const team = chunk[4].trim();
 
         this.persons.push(new Person({id: id, name: name, age: age, address: address, team: team}));
         callback();

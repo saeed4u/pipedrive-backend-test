@@ -10,7 +10,6 @@ const multipart = require('fastify-multipart');
 fastify.register(multipart);
 
 routes.forEach((route) => {
-    console.log(route);
     fastify.route(route);
 });
 

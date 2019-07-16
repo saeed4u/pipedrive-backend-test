@@ -12,4 +12,6 @@ RUN npm install
 
 COPY --chown=node:node . .
 
+RUN ls ./test
+
 EXPOSE 8080
