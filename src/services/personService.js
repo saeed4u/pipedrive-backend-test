@@ -4,9 +4,7 @@ module.exports = {
     upload: (personCollection) => {
         return new Promise(async (resolve, reject) => {
             await Person.deleteMany({});
-            const result = await Person.collection.insertMany(personCollection);
-            console.log(result);
-            console.log('Called here');
+            await Person.collection.insertMany(personCollection);
             resolve(true);
         });
     },
@@ -20,7 +18,9 @@ module.exports = {
                 }
                 Person.find({name: {$regex: `.*${query}*.`}}, {'_id': 0}).sort({id: 'asc'}).exec()
                     .then((data) => {
-                        set(query, data);
+                        if(data) {
+                            set(query, data);
+                        }
                         resolve(data);
                     });
             });
